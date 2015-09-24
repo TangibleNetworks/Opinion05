@@ -1,7 +1,7 @@
 //Threshold Model with Greater than or equal to condition
 
 
-#include <math.h>
+#include<math.h>
 #include<TN05.h> // Requires TN05.h, TN05.cpp, Keywords.txt in folder <Arduino>/Libraries/TN05/
 TN Tn = TN(-1.0,1.0); // Create TN object with range [-1.0, 1.0]
 
@@ -44,7 +44,7 @@ void loop(){
   
   set_colour();
 
-  for (int reps=1; reps<1000; reps++ ){
+  for (int reps=1; reps<500; reps++ ){
             check_potential();
         if (Tn.sw()==true){
             switchHold();
@@ -80,10 +80,10 @@ void loop(){
   
 }
 
-void check_Reset(){
-
-  if(Tn.masterSw()==true){
-
+boolean check_Reset(){
+  boolean a=false;
+  while(Tn.masterSw()==true){
+                a=true;
                 if (Tn.pot()>0.5){
                       Opinion=true;
                 }
@@ -91,8 +91,40 @@ void check_Reset(){
                        Opinion=false;
                 }
                 set_colour();
-        }
+
+               if(Tn.pot()>0.9 or Tn.pot()<0.1){ 
+                    for (int reps=1; reps<500; reps++ ){
+    
+                      if(Tn.masterSw()==false){
+                          break;
+                      }
+    
+                          delay(1);
+                     }
+
+                    Tn.colour(0,0,0);
+              
+                    for (int reps=1; reps<500; reps++ ){
+
+                    if(Tn.masterSw()==false){
+                      break;
+                   }
+                    delay(1);
+                  }
+
+               }
+
+             set_colour();
+  } 
+
+  return(a);
+                
 }
+
+    
+
+  
+
 
 void Majority_Vote (){
 
@@ -278,10 +310,15 @@ void check_potential(){
 }
 
 void flash(){
-
+  boolean test;
   Tn.colour(0,0,0);
   for (int reps=1; reps<500; reps++ ){
-    check_Reset();
+    test=check_Reset();
+
+    if(test==true){
+      return;
+    }
+    
     if (Tn.sw()==true){
             switchHold();
         }
@@ -291,7 +328,10 @@ void flash(){
 
   set_colour();
   for (int reps=1; reps<500; reps++ ){
-    check_Reset();
+    test=check_Reset();
+    if(test==true){
+      return;
+    }
     if (Tn.sw()==true){
             switchHold();
         }
